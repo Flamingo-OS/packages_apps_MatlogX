@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-     Copyright (C) 2021-2022 AOSP-Krypton Project
+     Copyright (C) 2021-2022 FlamingoOS Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -21,12 +21,11 @@
     <string name="how_to_grant">
         应用需要 READ_LOGS 权限才能读取系统 logcat.\n
         如要获取权限，输入以下 adb 命令 (无引号):\n
-        "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
+        "adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS".
     </string>
     <string name="search_hint">搜索日志</string>
-    <string name="command">adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS</string>
+    <string name="command">adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS</string>
     <string name="copied_to_clipboard">已复制到剪切板</string>
-    <string name="search_hint">搜索日志</string>
     <string name="log_level">日志等级</string>
     <string name="save_zip">保存为 ZIP</string>
     <string name="include_device_info">包括设备信息</string>

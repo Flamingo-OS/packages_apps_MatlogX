@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-     Copyright (C) 2021-2022 AOSP-Krypton Project
+     Copyright (C) 2021-2022 FlamingoOS Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
     <string name="how_to_grant">
         Приложению требуется разрешение READ_LOGS для чтения системного logcat.\n
 	   Чтобы предоставить разрешение, откройте adb и введите следующую команду (без кавычек):\n
-        "adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS".
+        "adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS".
     </string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
     <string name="search_hint">Поиск логов</string>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-syntax = "proto3";
+package com.flamingo.matlogx.data.settings
 
-option java_package = "com.flamingo.matlogx.data.settings";
-option java_multiple_files = true;
-
-message Settings {
-  string logcat_buffers = 1;
-  int32 log_size_limit = 2;
-  string log_level = 3;
-  bool include_device_info = 4;
-  bool expanded_by_default = 5;
-  int32 text_size = 6;
-  int32 write_buffer_size = 7;
+object SettingsDefaults {
+    const val LOG_SIZE_DEFAULT = 10000
+    const val LOG_LEVEL_DEFAULT = "V"
+    const val INCLUDE_DEVICE_INFO_DEFAULT = false
+    const val DEFAULT_BUFFERS = "main,system,crash"
+    const val EXPANDED_DEFAULT = false
+    const val DEFAULT_TEXT_SIZE = 12
+    const val DEFAULT_WRITE_BUFFER_SIZE = 200
 }

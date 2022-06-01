@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-     Copyright (C) 2021-2022 AOSP-Krypton Project
+     Copyright (C) 2021-2022 FlamingoOS Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@
     <string name="how_to_grant">
         App requires READ_LOGS permission to read system logcat.\n
         To grant the permission, open adb and enter the following command (without quotes):\n
-        \"adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS\"
+        \"adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS\"
     </string>
     <string name="adb_command">ADB command</string>
-    <string name="command">adb shell pm grant com.krypton.matlogx android.permission.READ_LOGS</string>
+    <string name="command">adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="search_hint">Search logs</string>
     <string name="log_level">Log level</string>

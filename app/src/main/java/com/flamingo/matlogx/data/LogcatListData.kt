@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-syntax = "proto3";
+package com.flamingo.matlogx.data
 
-option java_package = "com.flamingo.matlogx.data.settings";
-option java_multiple_files = true;
-
-message Settings {
-  string logcat_buffers = 1;
-  int32 log_size_limit = 2;
-  string log_level = 3;
-  bool include_device_info = 4;
-  bool expanded_by_default = 5;
-  int32 text_size = 6;
-  int32 write_buffer_size = 7;
-}
+/**
+ * Wrapper class around [LogInfo] representing an item
+ * in logcat list view.
+ *
+ * @property isExpanded whether full log message including PID and timestamp should be shown.
+ * @property textSize text size in sp.
+ */
+data class LogcatListData(
+    val logInfo: LogInfo,
+    val isExpanded: Boolean,
+    val textSize: Int
+)
