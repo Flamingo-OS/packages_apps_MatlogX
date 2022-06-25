@@ -46,5 +46,5 @@ jobs:
             cd vendor_prebuilts/
             git add .
             echo $GIT_HASH
-            git commit -m "Update MatlogX APK for ${{ env.GIT_LINK }}"
+            git diff-index --quiet HEAD || git commit -m "Update MatlogX APK for ${{ env.GIT_LINK }}"
             git push origin A12.1
