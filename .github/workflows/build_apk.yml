@@ -33,14 +33,17 @@ jobs:
             git config --global user.email "npv12@iitbbs.ac.in"
             git config --global user.name "Pranav"
       - name: Export commit hash
-        run: export GIT_HASH=$(git rev-parse --short HEAD)
+        run: |
+            git_hash=$(git rev-parse "$GITHUB_SHA")
+            link="https://github.com/Flamingo-OS/packages_apps_MatlogX/commit/$git_hash"
+            echo "GIT_LINK=$link" >> $GITHUB_ENV
       - name: Uploading artifact
         run: |
             git clone https://.:${{ secrets.API_TOKEN_GITHUB }}@github.com/Flamingo-OS/vendor_prebuilts
-            mkdir -p vendor_prebuilts/app/matlogX
-            cp ${{ env.ARTIFACT_PATH }} vendor_prebuilts/app/matlogX
+            mkdir -p vendor_prebuilts/app/MatlogX
+            cp ${{ env.ARTIFACT_PATH }} vendor_prebuilts/app/MatlogX
             cd vendor_prebuilts/
             git add .
             echo $GIT_HASH
-            git commit -m "Update MatlogX APK for $GIT_HASH"
+            git commit -m "Update MatlogX APK for ${{ env.GIT_LINK }}"
             git push origin A12.1
