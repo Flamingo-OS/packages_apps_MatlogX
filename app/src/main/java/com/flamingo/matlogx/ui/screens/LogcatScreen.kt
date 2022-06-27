@@ -150,8 +150,13 @@ fun LogcatScreen(
                 val listState = rememberLazyListState()
                 var fabState by remember { mutableStateOf<FABState>(FABState.Gone) }
                 val logcatStreamPaused by logcatScreenState.logcatStreamPaused.collectAsState(false)
-                LaunchedEffect(logcatList, logcatStreamPaused) {
-                    if (logcatList.isNotEmpty() && !logcatStreamPaused) {
+                val shouldScrollToBottom by remember {
+                    derivedStateOf {
+                        logcatList.isNotEmpty() && !logcatStreamPaused
+                    }
+                }
+                LaunchedEffect(shouldScrollToBottom) {
+                    if (shouldScrollToBottom) {
                         listState.animateScrollToItem(logcatList.lastIndex)
                         // Make sure to hide FAB when auto scrolling
                         // as nested scroll connection won't know about internal
@@ -161,13 +166,17 @@ fun LogcatScreen(
                         }
                     }
                 }
-                val isLastItemVisible =
-                    (listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size) == logcatList.size
-                if (listState.firstVisibleItemIndex == 0 ||
-                    isLastItemVisible &&
-                    (fabState !is FABState.Gone)
-                ) {
-                    fabState = FABState.Gone
+                val shouldHideFAB by remember {
+                    derivedStateOf {
+                        listState.firstVisibleItemIndex == 0 ||
+                                (listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size) == logcatList.size &&
+                                fabState !is FABState.Gone
+                    }
+                }
+                SideEffect {
+                    if (shouldHideFAB) {
+                        fabState = FABState.Gone
+                    }
                 }
                 val nestedScrollConnection = remember {
                     object : NestedScrollConnection {
