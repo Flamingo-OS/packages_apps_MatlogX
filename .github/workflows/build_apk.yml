@@ -20,7 +20,7 @@ jobs:
           java-version: 11
       - name: Clone our prebuilts
         run: |
-          git clone https://github.com/Flamingo-OS/vendor_prebuilts
+          git clone https://.:${{ secrets.API_TOKEN_GITHUB }}@github.com/Flamingo-OS/vendor_prebuilts
           mkdir app/libs
           cp vendor_prebuilts/libs/support-compose.aar app/libs/
       - uses: gradle/gradle-build-action@v2
@@ -36,20 +36,20 @@ jobs:
           mv "$oldArtifactPath" "$newArtifactPath"
       - name: Setting git config
         run: |
-            git config --global user.email "${{ secrets.EMAIL }}"
-            git config --global user.name "${{ secrets.NAME }}"
+          git config --global user.email "${{ secrets.EMAIL }}"
+          git config --global user.name "${{ secrets.NAME }}"
       - name: Export commit hash
         run: |
-            git_hash=$(git rev-parse "$GITHUB_SHA")
-            link="https://github.com/Flamingo-OS/packages_apps_MatlogX/commit/$git_hash"
-            echo "GIT_LINK=$link" >> $GITHUB_ENV
+          git_hash=$(git rev-parse "$GITHUB_SHA")
+          link="https://github.com/Flamingo-OS/packages_apps_MatlogX/commit/$git_hash"
+          echo "GIT_LINK=$link" >> $GITHUB_ENV
       - name: Uploading artifact
         run: |
-            git clone https://.:${{ secrets.API_TOKEN_GITHUB }}@github.com/Flamingo-OS/vendor_prebuilts
-            mkdir -p vendor_prebuilts/app/MatlogX
-            cp ${{ env.ARTIFACT_PATH }} vendor_prebuilts/app/MatlogX
-            cd vendor_prebuilts/
-            git add .
-            echo $GIT_HASH
-            git diff-index --quiet HEAD || git commit -m "Update MatlogX APK for ${{ env.GIT_LINK }}"
-            git push origin A12.1
+          mkdir -p vendor_prebuilts/app/MatlogX
+          cp ${{ env.ARTIFACT_PATH }} vendor_prebuilts/app/MatlogX
+          cd vendor_prebuilts/
+          git pull
+          git add .
+          echo $GIT_HASH
+          git diff-index --quiet HEAD || git commit -m "Update MatlogX APK for ${{ env.GIT_LINK }}"
+          git push origin A12.1
