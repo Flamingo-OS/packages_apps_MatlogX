@@ -27,8 +27,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.ui.preferences.*
 import com.flamingo.matlogx.viewmodels.SettingsViewModel
+import com.flamingo.support.compose.ui.preferences.CheckBoxPreference
+import com.flamingo.support.compose.ui.preferences.DiscreteSeekBarPreference
+import com.flamingo.support.compose.ui.preferences.EditTextPreference
+import com.flamingo.support.compose.ui.preferences.Entry
+import com.flamingo.support.compose.ui.preferences.ListPreference
+import com.flamingo.support.compose.ui.preferences.MultiSelectListPreference
+import com.flamingo.support.compose.ui.preferences.PreferenceGroupHeader
 
 import kotlinx.coroutines.flow.map
 
@@ -64,7 +70,7 @@ fun SettingsScreen(
     ) { paddingValues ->
         LazyColumn(
             contentPadding = PaddingValues(
-                top = paddingValues.calculateTopPadding(),
+                top = paddingValues.calculateTopPadding() + 12.dp,
                 start = 24.dp,
                 end = 24.dp
             )
