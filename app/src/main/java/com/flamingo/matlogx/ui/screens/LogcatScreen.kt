@@ -193,9 +193,6 @@ fun LogcatScreen(
                     userScrollEnabled = logcatStreamPaused
                 ) {
                     itemsIndexed(logcatList) { index, item ->
-                        if (index != 0) {
-                            Divider()
-                        }
                         LogItem(
                             modifier = Modifier.animateContentSize(),
                             item = item,
