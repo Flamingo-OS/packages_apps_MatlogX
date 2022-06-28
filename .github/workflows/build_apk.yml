@@ -5,12 +5,10 @@ on:
     branches: 
       - 'A12.1'
     paths-ignore:
-      - '.github/**'
       - '**.mkdn'
       - '.**'
   pull_request:
       paths-ignore:
-      - '.github/**'
       - '**.mkdn'
       - '.**'
   workflow_dispatch:
@@ -19,7 +17,6 @@ jobs:
   build-release-apk:
     runs-on: ubuntu-latest
     continue-on-error: true
-    if: ${{ !startsWith(github.event.head_commit.message, '[skip]') }}
 
     steps:
       - name: Check out repository
