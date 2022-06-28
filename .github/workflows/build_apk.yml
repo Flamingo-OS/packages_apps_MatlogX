@@ -7,10 +7,12 @@ on:
     paths-ignore:
       - '**.mkdn'
       - '.**'
+      - '!.github/workflows/**'
   pull_request:
       paths-ignore:
       - '**.mkdn'
       - '.**'
+      - '!.github/workflows/**'
   workflow_dispatch:
 
 jobs:
