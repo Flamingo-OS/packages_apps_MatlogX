@@ -6,13 +6,13 @@ concurrency:
 
 on:
   push:
-    branches: 
+    branches:
       - 'A12.1'
     paths-ignore:
       - '**.mkdn'
       - '.**'
   pull_request:
-      paths-ignore:
+    paths-ignore:
       - '**.mkdn'
       - '.**'
   workflow_dispatch:
@@ -79,7 +79,7 @@ jobs:
           git pull
           git add .
           if [[ `git status --porcelain` ]] ; then
-            if [ ${{ github.event.workflow_dispatch }} ] ; then
+            if [ ${{ github.event_name == 'workflow_dispatch' }} ] ; then
               message="${{ github.event.inputs.message }}"
             else
               message="Update MatlogX APK for ${{ env.GIT_LINK }}"
