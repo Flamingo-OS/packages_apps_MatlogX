@@ -26,6 +26,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -59,9 +60,11 @@ class LogcatActivity : ComponentActivity() {
         setContent {
             LogcatTheme {
                 val systemUiController = rememberSystemUiController()
-                with(systemUiController) {
-                    setStatusBarColor(MaterialTheme.colorScheme.primary)
-                    setNavigationBarColor(MaterialTheme.colorScheme.surface)
+                val primaryColor = MaterialTheme.colorScheme.primary
+                val surfaceColor = MaterialTheme.colorScheme.surface
+                LaunchedEffect(primaryColor, surfaceColor) {
+                    systemUiController.setStatusBarColor(primaryColor)
+                    systemUiController.setNavigationBarColor(surfaceColor)
                 }
                 val navHostController = rememberAnimatedNavController()
                 AnimatedNavHost(
