@@ -134,7 +134,7 @@ class LogRecordService : Service() {
     }
 
     private fun stopRecording() {
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         notificationManager.cancelAll()
         stopSelf()
     }

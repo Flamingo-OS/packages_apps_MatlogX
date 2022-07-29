@@ -32,7 +32,7 @@ import com.flamingo.matlogx.ui.widgets.MenuItem
 import com.flamingo.matlogx.ui.widgets.OverflowMenu
 import com.flamingo.matlogx.ui.widgets.SearchBar
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     topBarState: TopBarState,

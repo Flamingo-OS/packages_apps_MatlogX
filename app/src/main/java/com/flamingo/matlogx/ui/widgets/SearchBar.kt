@@ -185,6 +185,7 @@ fun PreviewRecentSearchRow() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun PreviewSearchBar() {
