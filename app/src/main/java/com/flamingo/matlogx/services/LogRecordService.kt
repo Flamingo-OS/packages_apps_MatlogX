@@ -19,16 +19,16 @@ package com.flamingo.matlogx.services
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.IBinder
 import android.widget.Toast
 
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 
 import com.flamingo.matlogx.R
 import com.flamingo.matlogx.data.LogcatRepository
@@ -41,9 +41,7 @@ import kotlinx.coroutines.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LogRecordService : Service() {
-
-    private lateinit var coroutineScope: CoroutineScope
+class LogRecordService : LifecycleService() {
 
     private lateinit var notificationManager: NotificationManagerCompat
 
@@ -63,7 +61,6 @@ class LogRecordService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        coroutineScope = CoroutineScope(Dispatchers.Main)
         setupNotificationChannel()
         activityIntent = PendingIntent.getActivity(
             this,
@@ -97,7 +94,7 @@ class LogRecordService : Service() {
             if (!logcatRepository.recordingLogs.value) {
                 startForeground()
                 receiveFailureEvents()
-                coroutineScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch(Dispatchers.IO) {
                     logcatRepository.recordLogs()
                 }
             }
@@ -122,7 +119,7 @@ class LogRecordService : Service() {
     }
 
     private fun receiveFailureEvents() {
-        coroutineScope.launch {
+        lifecycleScope.launch {
             for (throwable in logcatRepository.recordLogErrorChannel) {
                 Toast.makeText(
                     this@LogRecordService,
@@ -139,11 +136,8 @@ class LogRecordService : Service() {
         stopSelf()
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
-
     override fun onDestroy() {
         logcatRepository.stopRecordingLogs()
-        coroutineScope.cancel()
         unregisterReceiver(broadcastReceiver)
         super.onDestroy()
     }
