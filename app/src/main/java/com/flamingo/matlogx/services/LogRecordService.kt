@@ -97,7 +97,7 @@ class LogRecordService : Service() {
             if (!logcatRepository.recordingLogs.value) {
                 startForeground()
                 receiveFailureEvents()
-                coroutineScope.launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     logcatRepository.recordLogs()
                 }
             }

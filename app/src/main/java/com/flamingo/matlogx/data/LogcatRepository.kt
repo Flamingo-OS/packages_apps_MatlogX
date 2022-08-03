@@ -139,18 +139,17 @@ class LogcatRepository @Inject constructor(
                     getLogcatArgs(),
                     null /* tags aren't supported yet*/,
                     logLevel
-                ).flowOn(Dispatchers.IO)
-                    .collect {
-                        bufferedLogs.add(it)
-                        if (bufferedLogs.size >= writeBuffer) {
-                            bufferedLogs.forEach { log ->
-                                writer.write(log)
-                                writer.newLine()
-                            }
-                            writer.flush()
-                            bufferedLogs.clear()
+                ).collect {
+                    bufferedLogs.add(it)
+                    if (bufferedLogs.size >= writeBuffer) {
+                        bufferedLogs.forEach { log ->
+                            writer.write(log)
+                            writer.newLine()
                         }
+                        writer.flush()
+                        bufferedLogs.clear()
                     }
+                }
             } catch (e: Throwable) {
                 recordLogErrorChannel.send(e)
                 _recordingLogs.value = false
