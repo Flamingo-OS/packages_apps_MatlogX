@@ -20,14 +20,27 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.viewmodels.SettingsViewModel
+import com.flamingo.matlogx.data.settings.DEFAULT_BUFFERS
+import com.flamingo.matlogx.ui.states.SettingsScreenState
+import com.flamingo.matlogx.ui.states.rememberSettingsScreenState
 import com.flamingo.support.compose.ui.preferences.CheckBoxPreference
 import com.flamingo.support.compose.ui.preferences.DiscreteSeekBarPreference
 import com.flamingo.support.compose.ui.preferences.EditTextPreference
@@ -36,15 +49,15 @@ import com.flamingo.support.compose.ui.preferences.ListPreference
 import com.flamingo.support.compose.ui.preferences.MultiSelectListPreference
 import com.flamingo.support.compose.ui.preferences.PreferenceGroupHeader
 
-import kotlinx.coroutines.flow.map
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    settingsViewModel: SettingsViewModel,
-    onBackPressed: () -> Unit,
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    state: SettingsScreenState = rememberSettingsScreenState()
 ) {
     Scaffold(
+        modifier = modifier,
         topBar = {
             val containerColor = MaterialTheme.colorScheme.primary
             val contentColorForContainer = contentColorFor(backgroundColor = containerColor)
@@ -53,7 +66,7 @@ fun SettingsScreen(
                     Text(text = stringResource(R.string.settings))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.settings_back_button_content_desc),
@@ -79,7 +92,7 @@ fun SettingsScreen(
                 PreferenceGroupHeader(title = stringResource(id = R.string.appearance))
             }
             item {
-                val textSize by settingsViewModel.textSize.collectAsState(initial = 0)
+                val textSize by state.textSize.collectAsState(initial = 0)
                 ListPreference(
                     title = stringResource(id = R.string.text_size),
                     entries = listOf(
@@ -89,18 +102,18 @@ fun SettingsScreen(
                     ),
                     value = textSize,
                     onEntrySelected = {
-                        settingsViewModel.setTextSize(it)
+                        state.setTextSize(it)
                     }
                 )
             }
             item {
-                val expanded by settingsViewModel.expandedByDefault.collectAsState(initial = false)
+                val expanded by state.expandedByDefault.collectAsState(initial = false)
                 CheckBoxPreference(
                     title = stringResource(id = R.string.expand_logs_by_default),
                     summary = stringResource(id = R.string.expand_logs_summary),
                     checked = expanded,
                     onCheckedChange = {
-                        settingsViewModel.setExpandedByDefault(it)
+                        state.setExpandedByDefault(it)
                     }
                 )
             }
@@ -108,22 +121,20 @@ fun SettingsScreen(
                 PreferenceGroupHeader(title = stringResource(id = R.string.configuration))
             }
             item {
-                val buffers = stringArrayResource(id = R.array.buffers).toList()
-                val selectedBuffers by settingsViewModel.logcatBuffers.map { it.split(",") }
-                    .collectAsState(initial = emptyList())
+                val selectedBuffers by state.logcatBuffers.collectAsState(initial = DEFAULT_BUFFERS)
                 MultiSelectListPreference(
                     title = stringResource(id = R.string.log_buffers),
-                    summary = selectedBuffers.joinToString(","),
-                    entries = buffers.map { Entry(it, it) },
+                    summary = selectedBuffers.map { it.name.lowercase() }.joinToString(","),
+                    entries = state.logcatBufferEntries,
                     values = selectedBuffers,
                     onValuesUpdated = {
-                        settingsViewModel.setLogcatBuffers(it.joinToString(","))
+                        state.setLogcatBuffers(it)
                     },
                     onDismissListener = {}
                 )
             }
             item {
-                val limit by settingsViewModel.logcatSizeLimit.collectAsState(0)
+                val limit by state.logcatSizeLimit.collectAsState(0)
                 EditTextPreference(
                     title = stringResource(id = R.string.log_display_limit),
                     summary = if (limit == 0)
@@ -135,12 +146,12 @@ fun SettingsScreen(
                         ),
                     value = limit.toString(),
                     onValueSelected = {
-                        settingsViewModel.setLogcatSizeLimit(it.toInt())
+                        state.setLogcatSizeLimit(it.toInt())
                     }
                 )
             }
             item {
-                val size by settingsViewModel.writeBufferSize.collectAsState(0)
+                val size by state.writeBufferSize.collectAsState(0)
                 DiscreteSeekBarPreference(
                     title = stringResource(id = R.string.write_buffer_size),
                     summary = stringResource(id = R.string.write_buffer_size_summary),
@@ -148,7 +159,7 @@ fun SettingsScreen(
                     max = 1000,
                     value = size,
                     onProgressChanged = {
-                        settingsViewModel.setWriteBufferSize(it)
+                        state.setWriteBufferSize(it)
                     },
                     showProgressText = true
                 )

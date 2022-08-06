@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package com.flamingo.matlogx.data
+package com.flamingo.matlogx.data.log
 
 import android.content.Context
 import android.net.Uri
 
 import com.flamingo.matlogx.data.settings.settingsDataStore
 
-import dagger.hilt.android.qualifiers.ApplicationContext
-
 import java.io.File
-
-import javax.inject.Inject
-import javax.inject.Singleton
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-@Singleton
-class LogcatRepository @Inject constructor(
-    @ApplicationContext context: Context,
+class LogcatRepository(
+    context: Context,
     private val logFileManager: LogFileManager
 ) {
 
@@ -44,58 +44,40 @@ class LogcatRepository @Inject constructor(
     private val contentResolver = context.contentResolver
 
     private val _recordingLogs = MutableStateFlow(false)
-    val recordingLogs: StateFlow<Boolean>
-        get() = _recordingLogs
+    val recordingLogs: StateFlow<Boolean> = _recordingLogs.asStateFlow()
 
     val recordLogErrorChannel = Channel<Throwable>(1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     /**
-     * Get an asynchronous stream of [LogInfo].
+     * Get an asynchronous stream of [Log].
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
-     * @param logLevel the level of log below which logs should be omitted.
-     * @return a flow of [LogInfo].
+     * @param logLevel the logLevel of log below which logs should be omitted.
+     * @return a flow of [Log].
      */
-    suspend fun getLogcatStream(
-        tags: List<String>?,
-        logLevel: String,
-    ): Flow<LogInfo> {
-        return LogcatReader.readAsFlow(getLogcatArgs(), tags, logLevel)
-            .flowOn(Dispatchers.IO)
+    fun getLogcatStream(streamConfig: StreamConfig): Flow<Log> {
+        return LogcatReader.readAsFlow(
+            streamConfig.args(),
+            streamConfig.tags,
+            streamConfig.logLevel,
+            streamConfig.filter,
+            streamConfig.filterIgnoreCase
+        ).flowOn(Dispatchers.IO)
     }
 
     /**
-     * Get current logs as a list.
+     * Saves given list of [Log] as a zip file.
      *
      * @param tags a list of string that will be used to print only
      *             logs with those string as tags.
-     * @param logLevel the level of log below which logs should be omitted.
-     * @return the logs as a [List] of [LogInfo].
-     */
-    suspend fun getLogsAsList(
-        tags: List<String>?,
-        logLevel: String,
-    ): List<LogInfo> =
-        withContext(Dispatchers.IO) {
-            LogcatReader.getRawLogs(getLogcatArgs(), tags, logLevel)
-                .split("\n")
-                .filter { it.isNotBlank() }
-                .map { LogInfo.fromLine(it) }
-        }
-
-    /**
-     * Saves given list of [LogInfo] as a zip file.
-     *
-     * @param tags a list of string that will be used to print only
-     *             logs with those string as tags.
-     * @param logLevel the level of log below which logs should be omitted.
+     * @param logLevel the logLevel of log below which logs should be omitted.
      * @param includeDeviceInfo whether to include device info inside the zip.
      * @return a result with the [File] (or an exception if failed) that was saved.
      */
     suspend fun saveLogAsZip(
         tags: List<String>?,
-        logLevel: String,
+        logLevel: LogLevel,
         includeDeviceInfo: Boolean,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
@@ -163,9 +145,25 @@ class LogcatRepository @Inject constructor(
     }
 
     private suspend fun getLogcatArgs(): Map<String, String?> {
-        val buffers = settingsDataStore.data.map { it.logcatBuffers }.first()
+        val buffers = settingsDataStore.data
+            .map { it.logBuffersList }
+            .first()
+            .joinToString(",") { it.name.lowercase() }
         return mapOf(LogcatReader.OPTION_BUFFER to buffers)
     }
 
     fun getSavedLogsDirectoryUri(): Result<Uri> = logFileManager.getLogDirUri()
+}
+
+data class StreamConfig(
+    private val logBuffers: List<LogBuffer>,
+    val logLevel: LogLevel,
+    val tags: List<String>,
+    val filter: String? = null,
+    val filterIgnoreCase: Boolean = true,
+) {
+    fun args(): Map<String, String> {
+        val buffers = logBuffers.joinToString(",") { it.name.lowercase() }
+        return mapOf(LogcatReader.OPTION_BUFFER to buffers)
+    }
 }

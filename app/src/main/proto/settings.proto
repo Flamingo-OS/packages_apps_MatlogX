@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@ syntax = "proto3";
 option java_package = "com.flamingo.matlogx.data.settings";
 option java_multiple_files = true;
 
+import "log_data.proto";
+
 message Settings {
-  string logcat_buffers = 1;
+  repeated LogBuffer log_buffers = 1;
   int32 log_size_limit = 2;
-  string log_level = 3;
+  LogLevel log_level = 3;
   bool include_device_info = 4;
   bool expanded_by_default = 5;
   int32 text_size = 6;

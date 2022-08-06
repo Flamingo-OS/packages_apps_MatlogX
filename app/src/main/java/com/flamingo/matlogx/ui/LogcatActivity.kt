@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -38,9 +37,6 @@ import com.flamingo.matlogx.ui.screens.SettingsScreen
 import com.flamingo.matlogx.ui.states.rememberLogcatScreenState
 import com.flamingo.matlogx.ui.theme.LogcatTheme
 
-import dagger.hilt.android.AndroidEntryPoint
-
-@AndroidEntryPoint
 class LogcatActivity : ComponentActivity() {
 
     private val documentTreeLauncher =
@@ -92,15 +88,9 @@ class LogcatActivity : ComponentActivity() {
                             }
                         },
                     ) {
-                        val logcatScreenState = rememberLogcatScreenState(
-                            hiltViewModel(),
-                            navHostController
-                        )
                         LogcatScreen(
-                            logcatScreenState,
-                            onQuitAppRequest = {
-                                finish()
-                            },
+                            onBackPressed = { finish() },
+                            logcatScreenState = rememberLogcatScreenState(navHostController = navHostController)
                         )
                     }
                     composable(
@@ -124,9 +114,7 @@ class LogcatActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        SettingsScreen(hiltViewModel()) {
-                            navHostController.popBackStack()
-                        }
+                        SettingsScreen(navController = navHostController)
                     }
                 }
             }

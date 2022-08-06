@@ -31,16 +31,14 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.data.LogcatRepository
+import com.flamingo.matlogx.data.log.LogcatRepository
 import com.flamingo.matlogx.ui.LogcatActivity
 
-import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-import kotlinx.coroutines.*
+import org.koin.android.ext.android.inject
 
-import javax.inject.Inject
-
-@AndroidEntryPoint
 class LogRecordService : LifecycleService() {
 
     private lateinit var notificationManager: NotificationManagerCompat
@@ -48,8 +46,7 @@ class LogRecordService : LifecycleService() {
     private lateinit var activityIntent: PendingIntent
     private lateinit var stopIntent: PendingIntent
 
-    @Inject
-    lateinit var logcatRepository: LogcatRepository
+    private val logcatRepository by inject<LogcatRepository>()
 
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {

@@ -16,18 +16,40 @@
 
 package com.flamingo.matlogx.ui.screens
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.ui.states.TopBarState
+import com.flamingo.matlogx.ui.states.LogcatScreenState
 import com.flamingo.matlogx.ui.widgets.MenuItem
 import com.flamingo.matlogx.ui.widgets.OverflowMenu
 import com.flamingo.matlogx.ui.widgets.SearchBar
@@ -35,7 +57,7 @@ import com.flamingo.matlogx.ui.widgets.SearchBar
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    topBarState: TopBarState,
+    state: LogcatScreenState,
     onShowLogLevelMenuRequest: () -> Unit,
     onSaveLogsRequest: () -> Unit,
     onShareLogsRequest: () -> Unit
@@ -47,23 +69,23 @@ fun TopBar(
         title = {
             AnimatedContent(targetState = searchBarExpanded) { expanded ->
                 if (expanded) {
-                    val recentSearches by topBarState.searchSuggestions.collectAsState(emptyList())
+                    val recentSearches by state.searchSuggestions.collectAsState(emptyList())
                     SearchBar(
                         text = "",
                         hint = stringResource(id = R.string.search_hint),
                         history = recentSearches,
                         onSearchRequest = {
-                            topBarState.handleSearch(it)
+                            state.handleSearch(it)
                         },
                         onDismissRequest = {
                             searchBarExpanded = false
-                            topBarState.clearSearch()
+                            state.handleSearch(null)
                         },
                         onClearRecentQueryRequest = {
-                            topBarState.clearRecentSearch(it)
+                            state.clearRecentSearch(it)
                         },
                         onClearAllRecentQueriesRequest = {
-                            topBarState.clearAllRecentSearches()
+                            state.clearAllRecentSearches()
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             containerColor = Color.Transparent,
@@ -93,8 +115,8 @@ fun TopBar(
                     )
                 }
             }
-            IconButton(onClick = { topBarState.toggleLogcatFlowState() }) {
-                val isPaused by topBarState.logcatStreamPaused.collectAsState(false)
+            IconButton(onClick = { state.toggleLogcatFlowState() }) {
+                val isPaused by state.logcatStreamPaused.collectAsState(false)
                 Icon(
                     painter = painterResource(
                         if (isPaused)
@@ -107,7 +129,7 @@ fun TopBar(
                 )
             }
             TopBarOverflowMenu(
-                topBarState,
+                state,
                 contentColorForContainer,
                 onShowLogLevelMenuRequest,
                 onSaveLogsRequest,
@@ -123,7 +145,7 @@ fun TopBar(
 
 @Composable
 fun TopBarOverflowMenu(
-    topBarState: TopBarState,
+    state: LogcatScreenState,
     menuIconTint: Color,
     onShowLogLevelMenuRequest: () -> Unit,
     onSaveLogsRequest: () -> Unit,
@@ -152,7 +174,7 @@ fun TopBarOverflowMenu(
             imageVector = Icons.Filled.Clear,
             onClick = {
                 menuExpanded = false
-                topBarState.clearLogs()
+                state.clearLogs()
             }
         )
         MenuItem(
@@ -164,7 +186,7 @@ fun TopBarOverflowMenu(
                 onShowLogLevelMenuRequest()
             }
         )
-        val recordingLogs by topBarState.recordingLogs.collectAsState(false)
+        val recordingLogs by state.recordingLogs.collectAsState(false)
         MenuItem(
             title = stringResource(id = if (!recordingLogs) R.string.record_logs else R.string.stop_recording),
             iconContentDescription = stringResource(id = R.string.record_logs_button_content_desc),
@@ -172,9 +194,9 @@ fun TopBarOverflowMenu(
             onClick = {
                 menuExpanded = false
                 if (recordingLogs) {
-                    topBarState.stopRecordingLogs()
+                    state.stopRecordingLogs()
                 } else {
-                    topBarState.startRecordingLogs()
+                    state.startRecordingLogs()
                 }
             }
         )
@@ -202,7 +224,7 @@ fun TopBarOverflowMenu(
             painter = painterResource(id = R.drawable.ic_baseline_file_open_24),
             onClick = {
                 menuExpanded = false
-                topBarState.openSavedLogs()
+                state.openSavedLogs()
             }
         )
         MenuItem(
@@ -211,7 +233,7 @@ fun TopBarOverflowMenu(
             imageVector = Icons.Filled.Settings,
             onClick = {
                 menuExpanded = false
-                topBarState.openSettings()
+                state.openSettings()
             }
         )
     }

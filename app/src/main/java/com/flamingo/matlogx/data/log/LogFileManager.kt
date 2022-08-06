@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.flamingo.matlogx.data
+package com.flamingo.matlogx.data.log
 
 import android.content.Context
 import android.net.Uri
 
 import androidx.documentfile.provider.DocumentFile
-
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.flamingo.matlogx.data.DeviceInfo
 
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -29,16 +28,7 @@ import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
-/**
- * Utility class that can write files to application cache dir.
- */
-@Singleton
-class LogFileManager @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class LogFileManager(private val context: Context) {
 
     /**
      * Get uri to a new recording file.
@@ -144,9 +134,9 @@ class LogFileManager @Inject constructor(
         private const val DEVICE_INFO_FILE = "device_info.txt"
         private const val FILE_PREFIX = "Logs"
 
-        private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+        private val DateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
         private fun getTimestamp(): String {
-            return LocalDateTime.now().format(dateTimeFormatter)
+            return LocalDateTime.now().format(DateTimeFormat)
         }
 
         private const val LOG_FILE_EXT = ".log"

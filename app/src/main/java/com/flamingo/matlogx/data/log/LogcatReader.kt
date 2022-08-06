@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.flamingo.matlogx.data
+package com.flamingo.matlogx.data.log
 
 import java.io.InputStream
 
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 
 /**
  * A utility object to reads lines from system logcat.
@@ -43,28 +45,38 @@ object LogcatReader {
 
     /**
      * Read logcat with the given command line args and parse
-     * each line into a [LogInfo].
+     * each line into a [Log].
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param logLevel the log level below which the logs should be discarded.
-     * @return a [Flow] of [LogInfo].
+     * @param logLevel the log logLevel below which the logs should be discarded.
+     * @return a [Flow] of [Log].
      */
     fun readAsFlow(
-        args: Map<String, String?>? = null,
-        tags: List<String>? = null,
-        logLevel: String,
-    ): Flow<LogInfo> {
+        args: Map<String, String?>,
+        tags: List<String>,
+        logLevel: LogLevel,
+        filter: String?,
+        filterIgnoreCase: Boolean
+    ): Flow<Log> {
         return flow {
-            getInputStream(args, tags, logLevel).bufferedReader().use {
-                while (true) {
-                    runCatching {
-                        it.readLine()
-                    }.getOrNull()?.let { line ->
-                        emit(LogInfo.fromLine(line))
+            getInputStream(args, tags, logLevel)
+                .bufferedReader()
+                .use {
+                    while (currentCoroutineContext().isActive) {
+                        runCatching {
+                            it.readLine()
+                        }.onSuccess {
+                            if (filter == null || it.contains(
+                                    filter,
+                                    ignoreCase = filterIgnoreCase
+                                )
+                            ) {
+                                emit(LogFactory.fromString(it))
+                            }
+                        }
                     }
                 }
-            }
         }
     }
 
@@ -74,13 +86,13 @@ object LogcatReader {
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param logLevel the log level below which the logs should be discarded.
-     * @return a [Flow] of [LogInfo].
+     * @param logLevel the log logLevel below which the logs should be discarded.
+     * @return a [Flow] of [String].
      */
     fun readRawLogsAsFlow(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        logLevel: String,
+        logLevel: LogLevel,
     ): Flow<String> {
         return flow {
             getInputStream(args, tags, logLevel).bufferedReader().use {
@@ -100,13 +112,13 @@ object LogcatReader {
      *
      * @param args command line arguments for logcat.
      * @param tags a list of string tags to filter the logs.
-     * @param logLevel the log level below which the logs should be discarded.
+     * @param logLevel the log logLevel below which the logs should be discarded.
      * @return current system logs joined to a string.
      */
     fun getRawLogs(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        logLevel: String,
+        logLevel: LogLevel,
     ): String {
         return getInputStream(args, tags, logLevel, dump = true).bufferedReader().use { br ->
             br.readText()
@@ -116,13 +128,14 @@ object LogcatReader {
     private fun getInputStream(
         args: Map<String, String?>? = null,
         tags: List<String>? = null,
-        logLevel: String,
+        logLevel: LogLevel,
         dump: Boolean = false,
     ): InputStream {
         val argsList = mutableListOf(
             LOGCAT_BIN,
-            "*:$logLevel",
-            "--format=time"
+            "*:${logLevel.name.first()}",
+            "--format=time",
+            "-D"
         )
         // Append args
         args?.forEach { (k, v) ->

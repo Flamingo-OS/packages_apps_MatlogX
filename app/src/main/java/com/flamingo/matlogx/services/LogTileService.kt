@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,8 @@ import android.service.quicksettings.TileService
 import android.widget.Toast
 
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.data.LogcatRepository
+import com.flamingo.matlogx.data.log.LogcatRepository
 import com.flamingo.matlogx.data.settings.SettingsRepository
-
-import dagger.hilt.android.AndroidEntryPoint
-
-import javax.inject.Inject
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,14 +29,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
+import org.koin.android.ext.android.inject
+
 class LogTileService : TileService() {
 
-    @Inject
-    lateinit var logcatRepository: LogcatRepository
-
-    @Inject
-    lateinit var settingsRepository: SettingsRepository
+    private val logcatRepository by inject<LogcatRepository>()
+    private val settingsRepository by inject<SettingsRepository>()
 
     private lateinit var serviceScope: CoroutineScope
 
@@ -63,10 +57,10 @@ class LogTileService : TileService() {
     }
 
     private suspend fun showDialog() {
-        val includeDeviceInfo = settingsRepository.getIncludeDeviceInfo().first()
+        val includeDeviceInfo = settingsRepository.includeDeviceInfo.first()
         val result = logcatRepository.saveLogAsZip(
             null, /* tags aren't supported yet */
-            settingsRepository.getLogLevel().first(),
+            settingsRepository.logLevel.first(),
             includeDeviceInfo,
         )
         if (result.isSuccess) {

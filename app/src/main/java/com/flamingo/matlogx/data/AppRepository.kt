@@ -19,20 +19,15 @@ package com.flamingo.matlogx.data
 import com.flamingo.matlogx.data.room.AppDatabase
 import com.flamingo.matlogx.data.room.RecentSearchEntity
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-@Singleton
-class AppRepository @Inject constructor(appDatabase: AppDatabase) {
+class AppRepository(appDatabase: AppDatabase) {
 
     private val recentSuggestionsDao = appDatabase.recentSuggestionsDao()
 
-    val searchSuggestions: Flow<List<String>>
-        get() = recentSuggestionsDao.getRecentSearchQueriesSorted()
+    val searchSuggestions: Flow<List<String>> = recentSuggestionsDao.getRecentSearchQueriesSorted()
 
     suspend fun saveRecentSearchQuery(query: String) {
         withContext(Dispatchers.IO) {

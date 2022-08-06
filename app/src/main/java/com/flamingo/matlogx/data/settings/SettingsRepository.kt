@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 FlamingoOS Project
+ * Copyright (C) 2022 FlamingoOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,52 +17,37 @@
 package com.flamingo.matlogx.data.settings
 
 import android.content.Context
-
-import dagger.hilt.android.qualifiers.ApplicationContext
-
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.flamingo.matlogx.data.log.LogBuffer
+import com.flamingo.matlogx.data.log.LogLevel
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-@Singleton
-class SettingsRepository @Inject constructor(
-    @ApplicationContext context: Context,
-) {
+class SettingsRepository(context: Context) {
 
     private val settingsDataStore = context.settingsDataStore
 
-    /**
-     * Get the logcat buffers to include in logs.
-     *
-     * @return the buffers separated by a ",".
-     */
-    fun getLogcatBuffers(): Flow<String> = settingsDataStore.data.map {
-        it.logcatBuffers
-    }
+    val logcatBuffers: Flow<List<LogBuffer>> = settingsDataStore.data.map { it.logBuffersList }
 
-    /**
-     * Save the newly selected logcat buffers to settings.
-     *
-     * @param buffers the buffers separated by a ",".
-     */
-    suspend fun setLogcatBuffers(buffers: String) {
+    val logcatSizeLimit: Flow<Int> = settingsDataStore.data.map { it.logSizeLimit }
+
+    val logLevel: Flow<LogLevel> = settingsDataStore.data.map { it.logLevel }
+
+    val expandedByDefault: Flow<Boolean> = settingsDataStore.data.map { it.expandedByDefault }
+
+    val includeDeviceInfo: Flow<Boolean> = settingsDataStore.data.map { it.includeDeviceInfo }
+
+    val textSize: Flow<Int> = settingsDataStore.data.map { it.textSize }
+
+    val writeBufferSize: Flow<Int> = settingsDataStore.data.map { it.writeBufferSize }
+
+    suspend fun setLogcatBuffers(buffers: List<LogBuffer>) {
         settingsDataStore.updateData {
             it.toBuilder()
-                .setLogcatBuffers(buffers)
+                .clearLogBuffers()
+                .addAllLogBuffers(buffers)
                 .build()
         }
-    }
-
-    /**
-     * Get the user selected limit for number of log lines to keep
-     * at a time to prevent OOM errors.
-     *
-     * @return number of lines to keep as a [Flow].
-     */
-    fun getLogcatSizeLimit(): Flow<Int> = settingsDataStore.data.map {
-        it.logSizeLimit
     }
 
     /**
@@ -78,35 +63,12 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    /**
-     * Get the user selected log level.
-     *
-     * @return the persisted log level as a [Flow].
-     */
-    fun getLogLevel(): Flow<String> = settingsDataStore.data.map {
-        it.logLevel
-    }
-
-    /**
-     * Set the log level to filter logs
-     *
-     * @param value the log level to persist
-     */
-    suspend fun setLogLevel(value: String) {
+    suspend fun setLogLevel(level: LogLevel) {
         settingsDataStore.updateData {
             it.toBuilder()
-                .setLogLevel(value)
+                .setLogLevel(level)
                 .build()
         }
-    }
-
-    /**
-     * Whether to include device information in logs.
-     *
-     * @return the saved value as a [Flow].
-     */
-    fun getIncludeDeviceInfo(): Flow<Boolean> = settingsDataStore.data.map {
-        it.includeDeviceInfo
     }
 
     /**
@@ -123,15 +85,6 @@ class SettingsRepository @Inject constructor(
     }
 
     /**
-     * Whether to expand log message by default.
-     *
-     * @return the saved value as a [Flow].
-     */
-    fun getExpandedByDefault(): Flow<Boolean> = settingsDataStore.data.map {
-        it.expandedByDefault
-    }
-
-    /**
      * Save whether to expand log message by default.
      *
      * @param expanded the value to save.
@@ -145,15 +98,6 @@ class SettingsRepository @Inject constructor(
     }
 
     /**
-     * Get the text size for logs.
-     *
-     * @return the saved value as a [Flow].
-     */
-    fun getTextSize(): Flow<Int> = settingsDataStore.data.map {
-        it.textSize
-    }
-
-    /**
      * Save text size.
      *
      * @param textSize the value to save.
@@ -164,15 +108,6 @@ class SettingsRepository @Inject constructor(
                 .setTextSize(textSize)
                 .build()
         }
-    }
-
-    /**
-     * Get write buffer size for writing logs.
-     *
-     * @return the saved value as a [Flow].
-     */
-    fun getWriteBufferSize(): Flow<Int> = settingsDataStore.data.map {
-        it.writeBufferSize
     }
 
     /**

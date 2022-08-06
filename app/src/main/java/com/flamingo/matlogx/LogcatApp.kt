@@ -18,7 +18,17 @@ package com.flamingo.matlogx
 
 import android.app.Application
 
-import dagger.hilt.android.HiltAndroidApp
+import com.flamingo.matlogx.di.appModule
 
-@HiltAndroidApp
-class LogcatApp : Application()
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
+
+class LogcatApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@LogcatApp)
+            modules(appModule())
+        }
+    }
+}
