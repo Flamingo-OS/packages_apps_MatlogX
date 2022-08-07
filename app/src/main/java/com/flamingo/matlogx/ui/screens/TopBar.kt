@@ -76,7 +76,7 @@ fun TopBar(
         title = {
             AnimatedContent(targetState = searchBarExpanded) { expanded ->
                 if (expanded) {
-                    val recentSearches by state.searchSuggestions.collectAsState(emptyList())
+                    val recentSearches by state.recentSearchList.collectAsState(emptyList())
                     SearchBar(
                         initialText = "",
                         hint = stringResource(id = R.string.search_hint),

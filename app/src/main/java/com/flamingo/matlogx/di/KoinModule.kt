@@ -16,31 +16,17 @@
 
 package com.flamingo.matlogx.di
 
-import androidx.room.Room
-
-import com.flamingo.matlogx.data.AppRepository
 import com.flamingo.matlogx.data.log.LogFileManager
 import com.flamingo.matlogx.data.log.LogcatRepository
-
-import com.flamingo.matlogx.data.room.AppDatabase
+import com.flamingo.matlogx.data.search.RecentSearchRepository
 import com.flamingo.matlogx.data.settings.SettingsRepository
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 fun appModule() = module {
-
     single {
-        Room.databaseBuilder(
-            androidContext(),
-            AppDatabase::class.java,
-            "matlogx_database"
-        ).fallbackToDestructiveMigration()
-            .build()
-    }
-
-    single {
-        AppRepository(appDatabase = get())
+        RecentSearchRepository(androidContext())
     }
 
     single {

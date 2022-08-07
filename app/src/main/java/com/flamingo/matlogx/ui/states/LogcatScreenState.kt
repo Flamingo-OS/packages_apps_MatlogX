@@ -40,12 +40,12 @@ import androidx.navigation.NavHostController
 
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.flamingo.matlogx.R
-import com.flamingo.matlogx.data.AppRepository
 import com.flamingo.matlogx.data.log.Log
 import com.flamingo.matlogx.data.log.LogBuffer
 import com.flamingo.matlogx.data.log.LogLevel
 import com.flamingo.matlogx.data.log.LogcatRepository
 import com.flamingo.matlogx.data.log.StreamConfig
+import com.flamingo.matlogx.data.search.RecentSearchRepository
 import com.flamingo.matlogx.data.settings.SettingsRepository
 import com.flamingo.matlogx.ui.Routes
 
@@ -70,13 +70,13 @@ class LogcatScreenState(
     val snackbarHostState: SnackbarHostState,
     val coroutineScope: CoroutineScope,
     private val context: Context,
-    private val appRepository: AppRepository,
+    private val recentSearchRepository: RecentSearchRepository,
     private val logcatRepository: LogcatRepository,
     private val settingsRepository: SettingsRepository
 ) {
 
-    val searchSuggestions: Flow<List<String>>
-        get() = appRepository.searchSuggestions
+    val recentSearchList: Flow<List<String>>
+        get() = recentSearchRepository.recentSearchList
 
     private val _logcatFlowSuspended = MutableStateFlow(false)
     val logcatStreamPaused: StateFlow<Boolean> = _logcatFlowSuspended.asStateFlow()
@@ -146,7 +146,7 @@ class LogcatScreenState(
         cachedQuery.value = query
         if (query?.isNotBlank() == true) {
             coroutineScope.launch {
-                appRepository.saveRecentSearchQuery(query)
+                recentSearchRepository.saveRecentSearchQuery(query)
             }
         }
     }
@@ -175,13 +175,13 @@ class LogcatScreenState(
 
     fun clearRecentSearch(query: String) {
         coroutineScope.launch {
-            appRepository.clearRecentSearchQuery(query)
+            recentSearchRepository.clearRecentSearchQuery(query)
         }
     }
 
     fun clearAllRecentSearches() {
         coroutineScope.launch {
-            appRepository.clearAllRecentSearchQueries()
+            recentSearchRepository.clearAllRecentSearchQueries()
         }
     }
 
@@ -348,11 +348,11 @@ fun rememberLogcatScreenState(
     snackbarHostState: SnackbarHostState = SnackbarHostState(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     context: Context = LocalContext.current,
-    appRepository: AppRepository = get(),
+    recentSearchRepository: RecentSearchRepository = get(),
     logcatRepository: LogcatRepository = get(),
     settingsRepository: SettingsRepository = get()
 ) = remember(
-    appRepository,
+    recentSearchRepository,
     logcatRepository,
     settingsRepository,
     snackbarHostState,
@@ -364,7 +364,7 @@ fun rememberLogcatScreenState(
         snackbarHostState = snackbarHostState,
         coroutineScope = coroutineScope,
         context = context,
-        appRepository = appRepository,
+        recentSearchRepository = recentSearchRepository,
         logcatRepository = logcatRepository,
         settingsRepository = settingsRepository
     )

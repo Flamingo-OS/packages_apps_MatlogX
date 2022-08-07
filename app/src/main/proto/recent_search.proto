@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.flamingo.matlogx.data.room
+syntax = "proto3";
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
+option java_package = "com.flamingo.matlogx.data.search";
+option java_multiple_files = true;
 
-@Database(
-    entities = [
-        RecentSearchEntity::class
-    ],
-    version = 1,
-    exportSchema = false,
-)
-abstract class AppDatabase : RoomDatabase() {
-    abstract fun recentSuggestionsDao(): RecentSuggestionsDao
+message RecentSearch {
+  repeated RecentSearchData recentSearch = 1;
+}
+
+message RecentSearchData {
+  int64 timestamp = 1;
+  string searchQuery = 2;
 }
