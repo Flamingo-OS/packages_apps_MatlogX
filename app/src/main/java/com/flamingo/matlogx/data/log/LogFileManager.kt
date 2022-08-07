@@ -20,6 +20,7 @@ import android.content.Context
 import android.net.Uri
 
 import androidx.documentfile.provider.DocumentFile
+
 import com.flamingo.matlogx.data.DeviceInfo
 
 import java.nio.charset.StandardCharsets
@@ -68,8 +69,7 @@ class LogFileManager(private val context: Context) {
         val contentsToZip = mutableMapOf<String, ByteArray>()
         contentsToZip[timestamp + LOG_FILE_EXT] = log.toByteArray(StandardCharsets.UTF_8)
         if (includeDeviceInfo) {
-            contentsToZip[DEVICE_INFO_FILE] =
-                DeviceInfo.toRawString().toByteArray(StandardCharsets.UTF_8)
+            contentsToZip[DEVICE_INFO_FILE] = DeviceInfo.toByteArray(StandardCharsets.UTF_8)
         }
         val zipFile = logDir.createFile("application/zip", "$FILE_PREFIX-$timestamp")
             ?: return Result.failure(Throwable("Failed to create zip file"))
