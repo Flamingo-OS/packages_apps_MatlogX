@@ -35,7 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -72,7 +75,8 @@ class LogcatScreenState(
     private val context: Context,
     private val recentSearchRepository: RecentSearchRepository,
     private val logcatRepository: LogcatRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val lifecycle: Lifecycle
 ) {
 
     val recentSearchList: Flow<List<String>>
@@ -130,7 +134,9 @@ class LogcatScreenState(
     init {
         if (hasReadLogsPermission) {
             coroutineScope.launch {
-                startJob()
+                lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    startJob()
+                }
             }
         }
     }
@@ -350,14 +356,16 @@ fun rememberLogcatScreenState(
     context: Context = LocalContext.current,
     recentSearchRepository: RecentSearchRepository = get(),
     logcatRepository: LogcatRepository = get(),
-    settingsRepository: SettingsRepository = get()
+    settingsRepository: SettingsRepository = get(),
+    lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle
 ) = remember(
     recentSearchRepository,
     logcatRepository,
     settingsRepository,
     snackbarHostState,
     context,
-    navHostController
+    navHostController,
+    lifecycle
 ) {
     LogcatScreenState(
         navHostController = navHostController,
@@ -366,6 +374,7 @@ fun rememberLogcatScreenState(
         context = context,
         recentSearchRepository = recentSearchRepository,
         logcatRepository = logcatRepository,
-        settingsRepository = settingsRepository
+        settingsRepository = settingsRepository,
+        lifecycle = lifecycle
     )
 }
