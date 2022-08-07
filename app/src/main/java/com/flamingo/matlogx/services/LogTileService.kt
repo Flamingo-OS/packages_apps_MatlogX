@@ -21,6 +21,7 @@ import android.widget.Toast
 
 import com.flamingo.matlogx.R
 import com.flamingo.matlogx.data.log.LogcatRepository
+import com.flamingo.matlogx.data.log.StreamConfig
 import com.flamingo.matlogx.data.settings.SettingsRepository
 
 import kotlinx.coroutines.CoroutineScope
@@ -53,14 +54,18 @@ class LogTileService : TileService() {
     }
 
     override fun onClick() {
-        serviceScope.launch { showDialog() }
+        serviceScope.launch { saveLogs() }
     }
 
-    private suspend fun showDialog() {
+    private suspend fun saveLogs() {
         val includeDeviceInfo = settingsRepository.includeDeviceInfo.first()
+        val streamConfig = StreamConfig(
+            logBuffers = settingsRepository.logcatBuffers.first(),
+            logLevel = settingsRepository.logLevel.first(),
+            tags = emptyList()
+        )
         val result = logcatRepository.saveLogAsZip(
-            null, /* tags aren't supported yet */
-            settingsRepository.logLevel.first(),
+            streamConfig,
             includeDeviceInfo,
         )
         if (result.isSuccess) {

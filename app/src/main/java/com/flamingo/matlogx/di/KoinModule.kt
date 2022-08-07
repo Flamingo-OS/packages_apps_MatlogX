@@ -48,10 +48,7 @@ fun appModule() = module {
     }
 
     single {
-        LogcatRepository(
-            context = androidContext(),
-            logFileManager = get()
-        )
+        LogcatRepository(logFileManager = get())
     }
 
     single {

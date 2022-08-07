@@ -60,7 +60,7 @@ import com.flamingo.matlogx.R
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchBar(
-    text: String,
+    initialText: String,
     onSearchRequest: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onClearRecentQueryRequest: (String) -> Unit,
@@ -79,7 +79,7 @@ fun SearchBar(
         historyVisible = true
     }
     ExposedDropdownMenuBox(expanded = history.isNotEmpty(), onExpandedChange = {}) {
-        var searchText by remember { mutableStateOf(text) }
+        var searchText by remember { mutableStateOf(initialText) }
         TextField(
             modifier = modifier,
             value = searchText,
@@ -206,7 +206,7 @@ fun PreviewRecentSearchRow() {
 @Composable
 fun PreviewSearchBar() {
     SearchBar(
-        text = "",
+        initialText = "",
         hint = "Hint",
         onSearchRequest = {},
         onDismissRequest = {},

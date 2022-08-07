@@ -90,8 +90,8 @@ object LogcatReader {
      * @return a [Flow] of [String].
      */
     fun readRawLogsAsFlow(
-        args: Map<String, String?>? = null,
-        tags: List<String>? = null,
+        args: Map<String, String?>,
+        tags: List<String>,
         logLevel: LogLevel,
     ): Flow<String> {
         return flow {
@@ -116,18 +116,20 @@ object LogcatReader {
      * @return current system logs joined to a string.
      */
     fun getRawLogs(
-        args: Map<String, String?>? = null,
-        tags: List<String>? = null,
+        args: Map<String, String?>,
+        tags: List<String>,
         logLevel: LogLevel,
     ): String {
-        return getInputStream(args, tags, logLevel, dump = true).bufferedReader().use { br ->
-            br.readText()
-        }
+        return getInputStream(args, tags, logLevel, dump = true)
+            .bufferedReader()
+            .use {
+                it.readText()
+            }
     }
 
     private fun getInputStream(
-        args: Map<String, String?>? = null,
-        tags: List<String>? = null,
+        args: Map<String, String?>,
+        tags: List<String>,
         logLevel: LogLevel,
         dump: Boolean = false,
     ): InputStream {
@@ -138,12 +140,12 @@ object LogcatReader {
             "-D"
         )
         // Append args
-        args?.forEach { (k, v) ->
+        args.forEach { (k, v) ->
             argsList.add(k)
             argsList.add(v ?: "")
         }
         // Append tags
-        if (tags != null) {
+        if (tags.isNotEmpty()) {
             argsList.add(OPTION_DEFAULT_SILENT)
             tags.forEach { argsList.add(it) }
         }

@@ -16,6 +16,8 @@
 
 package com.flamingo.matlogx.ui.screens
 
+import android.content.Intent
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -45,14 +47,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 
 import com.flamingo.matlogx.R
+import com.flamingo.matlogx.services.LogRecordService
 import com.flamingo.matlogx.ui.states.LogcatScreenState
 import com.flamingo.matlogx.ui.widgets.MenuItem
 import com.flamingo.matlogx.ui.widgets.OverflowMenu
 import com.flamingo.matlogx.ui.widgets.SearchBar
+import com.flamingo.support.compose.runtime.rememberBoundService
+
+import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +78,7 @@ fun TopBar(
                 if (expanded) {
                     val recentSearches by state.searchSuggestions.collectAsState(emptyList())
                     SearchBar(
-                        text = "",
+                        initialText = "",
                         hint = stringResource(id = R.string.search_hint),
                         history = recentSearches,
                         onSearchRequest = {
@@ -186,18 +193,29 @@ fun TopBarOverflowMenu(
                 onShowLogLevelMenuRequest()
             }
         )
-        val recordingLogs by state.recordingLogs.collectAsState(false)
+        val context = LocalContext.current
+        val serviceIntent = remember(context) {
+            Intent(context, LogRecordService::class.java)
+        }
+        val service = rememberBoundService(
+            context = context,
+            intent = serviceIntent,
+            obtainService = { (it as LogRecordService.ServiceBinder).service }
+        )
+        val recordingLogs by (service?.recording ?: emptyFlow()).collectAsState(false)
         MenuItem(
             title = stringResource(id = if (!recordingLogs) R.string.record_logs else R.string.stop_recording),
             iconContentDescription = stringResource(id = R.string.record_logs_button_content_desc),
             painter = painterResource(id = if (!recordingLogs) R.drawable.ic_baseline_circle_24 else R.drawable.ic_baseline_stop_24),
             onClick = {
-                menuExpanded = false
                 if (recordingLogs) {
-                    state.stopRecordingLogs()
+                    service?.stopRecording()
+                    context.stopService(serviceIntent)
                 } else {
-                    state.startRecordingLogs()
+                    context.startService(serviceIntent)
+                    service?.startRecording()
                 }
+                menuExpanded = false
             }
         )
         MenuItem(

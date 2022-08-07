@@ -23,6 +23,7 @@ import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.annotation.GuardedBy
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -46,7 +47,6 @@ import com.flamingo.matlogx.data.log.LogLevel
 import com.flamingo.matlogx.data.log.LogcatRepository
 import com.flamingo.matlogx.data.log.StreamConfig
 import com.flamingo.matlogx.data.settings.SettingsRepository
-import com.flamingo.matlogx.services.LogRecordService
 import com.flamingo.matlogx.ui.Routes
 
 import kotlinx.coroutines.CoroutineScope
@@ -86,9 +86,6 @@ class LogcatScreenState(
 
     val logLevel: Flow<LogLevel>
         get() = settingsRepository.logLevel
-
-    val recordingLogs: StateFlow<Boolean>
-        get() = logcatRepository.recordingLogs
 
     val hasReadLogsPermission =
         ContextCompat.checkSelfPermission(
@@ -200,11 +197,7 @@ class LogcatScreenState(
 
     fun shareLogs() {
         coroutineScope.launch {
-            val result = logcatRepository.saveLogAsZip(
-                null, /* Tags isn't supported yet */
-                logLevel.first(),
-                includeDeviceInfo.first(),
-            )
+            val result = saveLogAndGetResult()
             if (result.isSuccess) {
                 val shareIntent = Intent().apply {
                     action = Intent.ACTION_SEND
@@ -228,11 +221,7 @@ class LogcatScreenState(
 
     fun saveLogs() {
         coroutineScope.launch {
-            val result = logcatRepository.saveLogAsZip(
-                null, /* Tags isn't supported yet */
-                logLevel.first(),
-                includeDeviceInfo.first(),
-            )
+            val result = saveLogAndGetResult()
             if (result.isSuccess) {
                 showSnackbar(context.getString(R.string.log_saved_successfully))
             } else {
@@ -242,6 +231,18 @@ class LogcatScreenState(
                 )
             }
         }
+    }
+
+    private suspend fun saveLogAndGetResult(): Result<Uri> {
+        val streamConfig = StreamConfig(
+            logBuffers = settingsRepository.logcatBuffers.first(),
+            logLevel = settingsRepository.logLevel.first(),
+            tags = emptyList()
+        )
+        return logcatRepository.saveLogAsZip(
+            streamConfig,
+            includeDeviceInfo.first(),
+        )
     }
 
     fun clearLogs() {
@@ -261,34 +262,24 @@ class LogcatScreenState(
         navHostController.navigate(Routes.SETTINGS)
     }
 
-    fun startRecordingLogs() {
-        context.startService(
-            Intent(context, LogRecordService::class.java).setAction(
-                LogRecordService.ACTION_RECORD_LOGS
-            )
-        )
-    }
-
-    fun stopRecordingLogs() {
-        context.stopService(Intent(context, LogRecordService::class.java))
-    }
-
     fun openSavedLogs() {
-        val uriResult = logcatRepository.getSavedLogsDirectoryUri()
-        if (uriResult.isSuccess) {
-            val intent = Intent(Intent.ACTION_VIEW, uriResult.getOrThrow())
-            val resolvedActivities =
-                context.packageManager.queryIntentActivities(intent, 0 /* flags */)
-            if (resolvedActivities.isNotEmpty()) {
-                context.startActivity(intent)
+        coroutineScope.launch {
+            val uriResult = logcatRepository.getSavedLogsDirectoryUri()
+            if (uriResult.isSuccess) {
+                val intent = Intent(Intent.ACTION_VIEW, uriResult.getOrThrow())
+                val resolvedActivities =
+                    context.packageManager.queryIntentActivities(intent, 0 /* flags */)
+                if (resolvedActivities.isNotEmpty()) {
+                    context.startActivity(intent)
+                } else {
+                    showSnackbar(context.getString(R.string.activity_not_found))
+                }
             } else {
-                showSnackbar(context.getString(R.string.activity_not_found))
+                showSnackbar(
+                    uriResult.exceptionOrNull()?.localizedMessage
+                        ?: context.getString(R.string.failed_to_open_directory)
+                )
             }
-        } else {
-            showSnackbar(
-                uriResult.exceptionOrNull()?.localizedMessage
-                    ?: context.getString(R.string.failed_to_open_directory)
-            )
         }
     }
 

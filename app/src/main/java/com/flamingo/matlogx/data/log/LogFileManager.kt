@@ -35,7 +35,7 @@ class LogFileManager(private val context: Context) {
      *
      * @return a [Result] holding a [Uri] to the file or an [Exception] on failure.
      */
-    fun getNewRecordingFileUri(): Result<Uri> {
+    fun obtainNewRecordingFileUri(): Result<Uri> {
         val logDir = getLogDir().getOrElse {
             return Result.failure(it)
         }
@@ -43,7 +43,7 @@ class LogFileManager(private val context: Context) {
             ?: logDir.createDirectory(RECORDING_DIRECTORY_NAME))
             ?: return Result.failure(Throwable("Unable to create directory for recording logs"))
         val timestamp = getTimestamp()
-        val recordingFile = recordingDir.createFile("text/plain", timestamp + LOG_FILE_EXT)
+        val recordingFile = recordingDir.createFile("text/plain", timestamp)
             ?: return Result.failure(Throwable("Failed to create file for recording"))
         return Result.success(recordingFile.uri)
     }
