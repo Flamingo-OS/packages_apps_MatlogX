@@ -53,9 +53,6 @@ class SettingsScreenState(
     val textSize: Flow<Int>
         get() = settingsRepository.textSize
 
-    val writeBufferSize: Flow<Int>
-        get() = settingsRepository.writeBufferSize
-
     fun setLogcatBuffers(buffers: List<LogBuffer>) {
         coroutineScope.launch {
             settingsRepository.setLogcatBuffers(buffers)
@@ -77,12 +74,6 @@ class SettingsScreenState(
     fun setTextSize(textSize: Int) {
         coroutineScope.launch {
             settingsRepository.setTextSize(textSize)
-        }
-    }
-
-    fun setWriteBufferSize(size: Int) {
-        coroutineScope.launch {
-            settingsRepository.setWriteBufferSize(size)
         }
     }
 }

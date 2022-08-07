@@ -27,7 +27,7 @@ class LogcatRepository(private val logFileManager: LogFileManager) {
 
     fun getLogcatStream(streamConfig: StreamConfig): Flow<Log> {
         return readAsFlow(
-            streamConfig.args(),
+            streamConfig.args,
             streamConfig.tags,
             streamConfig.logLevel,
             streamConfig.filter,
@@ -37,7 +37,7 @@ class LogcatRepository(private val logFileManager: LogFileManager) {
 
     fun getRawLogsAsFlow(streamConfig: StreamConfig): Flow<String> {
         return readRawLogsAsFlow(
-            streamConfig.args(),
+            streamConfig.args,
             streamConfig.tags,
             streamConfig.logLevel
         ).flowOn(Dispatchers.IO)
@@ -50,7 +50,7 @@ class LogcatRepository(private val logFileManager: LogFileManager) {
         withContext(Dispatchers.IO) {
             logFileManager.saveZip(
                 getRawLogs(
-                    streamConfig.args(),
+                    streamConfig.args,
                     streamConfig.tags,
                     streamConfig.logLevel
                 ),
@@ -77,9 +77,17 @@ data class StreamConfig(
     val tags: List<String>,
     val filter: String? = null,
     val filterIgnoreCase: Boolean = true,
+    val recentLinesCount: Int = 0
 ) {
-    fun args(): Map<String, String> {
+    val args: Map<String, String>
+
+    init {
+        val argsMap = mutableMapOf<String, String>()
         val buffers = logBuffers.joinToString(",") { it.name.lowercase() }
-        return mapOf(OPTION_BUFFER to buffers)
+        argsMap[OPTION_BUFFER] = buffers
+        if (recentLinesCount > 0) {
+            argsMap[OPTION_RECENT_LINES] = recentLinesCount.toString()
+        }
+        args = argsMap.toMap()
     }
 }

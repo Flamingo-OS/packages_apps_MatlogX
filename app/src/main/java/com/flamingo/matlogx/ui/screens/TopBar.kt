@@ -210,7 +210,6 @@ fun TopBarOverflowMenu(
             onClick = {
                 if (recordingLogs) {
                     service?.stopRecording()
-                    context.stopService(serviceIntent)
                 } else {
                     context.startService(serviceIntent)
                     service?.startRecording()

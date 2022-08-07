@@ -74,8 +74,4 @@
     <string name="medium">Moyen</string>
     <string name="large">Grand</string>
     <string name="settings_back_button_content_desc">Bouton de retour des paramètres</string>
-    <string name="write_buffer_size">Taille du tampon d\'écriture</string>
-    <string name="write_buffer_size_summary">
-        Nombre de lignes de journal à conserver en mémoire (pendant l\'enregistrement) avant d\'écrire sur le disque. Un tampon plus grand signifierait des écritures moins fréquentes et vice versa.
-    </string>
 </resources>

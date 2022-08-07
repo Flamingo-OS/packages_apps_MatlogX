@@ -71,8 +71,4 @@
     <string name="medium">中</string>
     <string name="large">大</string>
     <string name="settings_back_button_content_desc">设置返回按钮</string>
-    <string name="write_buffer_size">写入缓冲区大小</string>
-    <string name="write_buffer_size_summary">
-        在写到存储前，保留在内存中的日志行数（在记录时）。更大的缓冲区将意味着更少的写入次数，反之亦然。
-    </string>
 </resources>

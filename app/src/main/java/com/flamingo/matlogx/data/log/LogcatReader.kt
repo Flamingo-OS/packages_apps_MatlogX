@@ -38,6 +38,8 @@ private const val OPTION_DEFAULT_SILENT = "-s"
 
 private const val OPTION_DUMP = "-d"
 
+const val OPTION_RECENT_LINES = "-T"
+
 /**
  * Read logcat with the given command line args and parse
  * each line into a [Log].

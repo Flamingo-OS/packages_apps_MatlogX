@@ -42,7 +42,6 @@ import com.flamingo.matlogx.data.settings.DEFAULT_BUFFERS
 import com.flamingo.matlogx.ui.states.SettingsScreenState
 import com.flamingo.matlogx.ui.states.rememberSettingsScreenState
 import com.flamingo.support.compose.ui.preferences.CheckBoxPreference
-import com.flamingo.support.compose.ui.preferences.DiscreteSeekBarPreference
 import com.flamingo.support.compose.ui.preferences.EditTextPreference
 import com.flamingo.support.compose.ui.preferences.Entry
 import com.flamingo.support.compose.ui.preferences.ListPreference
@@ -148,20 +147,6 @@ fun SettingsScreen(
                     onValueSelected = {
                         state.setLogcatSizeLimit(it.toInt())
                     }
-                )
-            }
-            item {
-                val size by state.writeBufferSize.collectAsState(0)
-                DiscreteSeekBarPreference(
-                    title = stringResource(id = R.string.write_buffer_size),
-                    summary = stringResource(id = R.string.write_buffer_size_summary),
-                    min = 0,
-                    max = 1000,
-                    value = size,
-                    onProgressChanged = {
-                        state.setWriteBufferSize(it)
-                    },
-                    showProgressText = true
                 )
             }
         }

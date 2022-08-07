@@ -76,8 +76,4 @@
     <string name="medium">Medium</string>
     <string name="large">Large</string>
     <string name="settings_back_button_content_desc">Settings back button</string>
-    <string name="write_buffer_size">Write buffer size</string>
-    <string name="write_buffer_size_summary">
-        Number of log lines to keep in memory (while recording) before writing to disk. Bigger buffer would mean less frequent writes and vice versa.
-    </string>
 </resources>

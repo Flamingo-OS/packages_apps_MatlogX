@@ -40,13 +40,13 @@ import com.flamingo.matlogx.data.log.StreamConfig
 import com.flamingo.matlogx.data.settings.SettingsRepository
 import com.flamingo.matlogx.ui.LogcatActivity
 
-import java.io.BufferedWriter
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -61,7 +61,6 @@ class LogRecordService : LifecycleService() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == ACTION_STOP_RECORDING) {
                 stopRecording()
-                stopSelf()
             }
         }
     }
@@ -169,24 +168,25 @@ class LogRecordService : LifecycleService() {
             return
         }
         outputStream.bufferedWriter().use { writer ->
-            val writeBufferSize = settingsRepository.writeBufferSize.first()
             val streamConfig = StreamConfig(
                 logBuffers = settingsRepository.logcatBuffers.first(),
                 logLevel = settingsRepository.logLevel.first(),
-                tags = emptyList()
+                tags = emptyList(),
+                recentLinesCount = 1
             )
-            val bufferedLogs = mutableListOf<String>()
             runCatching {
-                logcatRepository.getRawLogsAsFlow(streamConfig).collect {
-                    bufferedLogs.add(it)
-                    if (bufferedLogs.size >= writeBufferSize) {
-                        writeFromBuffer(bufferedLogs.toList(), writer)
-                        bufferedLogs.clear()
+                logcatRepository.getRawLogsAsFlow(streamConfig).onCompletion {
+                    withContext(Dispatchers.IO) {
+                        writer.flush()
+                    }
+                }.collect {
+                    withContext(Dispatchers.IO) {
+                        writer.write(it)
+                        writer.newLine()
                     }
                 }
             }.onFailure {
                 toastAndStopRecording(it)
-                return@use
             }
         }
     }
@@ -202,23 +202,19 @@ class LogRecordService : LifecycleService() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private suspend fun writeFromBuffer(buffer: List<String>, writer: BufferedWriter) {
-        withContext(Dispatchers.IO) {
-            writer.write(buffer.joinToString("\n"))
-        }
-    }
-
     fun stopRecording() {
         if (!_recording.value) return
         stopForeground(STOP_FOREGROUND_REMOVE)
-        recordingJob?.cancel()
-        recordingJob = null
+        lifecycleScope.launch(Dispatchers.IO) {
+            recordingJob?.cancelAndJoin()
+            recordingJob = null
+            stopSelf()
+        }
         _recording.value = false
         toast(getString(R.string.recorded_logs))
     }
 
     override fun onDestroy() {
-        stopRecording()
         unregisterReceiver(broadcastReceiver)
         super.onDestroy()
     }

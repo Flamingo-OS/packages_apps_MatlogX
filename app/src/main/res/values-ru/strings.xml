@@ -51,6 +51,4 @@
     <string name="medium">Средний</string>
     <string name="large">Большой</string>
     <string name="settings_back_button_content_desc" >Возврат к настройкам</string>
-    <string name="write_buffer_size">Размер буфера записи</string>
-    <string name="write_buffer_size_summary">Количество строк журнала, которые необходимо сохранить в памяти (во время записи) перед записью на диск.  Больший буфер будет означать менее частые записи и наоборот.</string>
 </resources>

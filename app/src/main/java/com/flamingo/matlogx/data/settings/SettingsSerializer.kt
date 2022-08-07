@@ -40,7 +40,6 @@ val DEFAULT_BUFFERS = listOf(
 )
 const val DEFAULT_EXPANDED = false
 const val DEFAULT_TEXT_SIZE = 12
-const val DEFAULT_WRITE_BUFFER_SIZE = 200
 
 object SettingsSerializer : Serializer<Settings> {
     override val defaultValue: Settings = Settings.newBuilder()
@@ -50,7 +49,6 @@ object SettingsSerializer : Serializer<Settings> {
         .setIncludeDeviceInfo(DEFAULT_INCLUDE_DEVICE_INFO)
         .setExpandedByDefault(DEFAULT_EXPANDED)
         .setTextSize(DEFAULT_TEXT_SIZE)
-        .setWriteBufferSize(DEFAULT_WRITE_BUFFER_SIZE)
         .build()
 
     override suspend fun readFrom(input: InputStream): Settings {

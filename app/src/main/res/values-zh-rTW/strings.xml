@@ -71,8 +71,4 @@
     <string name="medium">中</string>
     <string name="large">大</string>
     <string name="settings_back_button_content_desc">設定返回按鈕</string>
-    <string name="write_buffer_size">寫入緩衝區大小</string>
-    <string name="write_buffer_size_summary">
-        在寫到儲存前，保留在記憶體中的日誌行數（在記錄時）。更大的緩衝區將意味著更少的寫入次數，反之亦然。
-    </string>
 </resources>

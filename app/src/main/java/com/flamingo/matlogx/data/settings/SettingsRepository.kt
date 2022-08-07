@@ -39,8 +39,6 @@ class SettingsRepository(context: Context) {
 
     val textSize: Flow<Int> = settingsDataStore.data.map { it.textSize }
 
-    val writeBufferSize: Flow<Int> = settingsDataStore.data.map { it.writeBufferSize }
-
     suspend fun setLogcatBuffers(buffers: List<LogBuffer>) {
         settingsDataStore.updateData {
             it.toBuilder()
@@ -106,19 +104,6 @@ class SettingsRepository(context: Context) {
         settingsDataStore.updateData {
             it.toBuilder()
                 .setTextSize(textSize)
-                .build()
-        }
-    }
-
-    /**
-     * Save write buffer size.
-     *
-     * @param size the value to save.
-     */
-    suspend fun setWriteBufferSize(size: Int) {
-        settingsDataStore.updateData {
-            it.toBuilder()
-                .setWriteBufferSize(size)
                 .build()
         }
     }
