@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 class LogcatRepository(private val logFileManager: LogFileManager) {
 
     fun getLogcatStream(streamConfig: StreamConfig): Flow<Log> {
-        return LogcatReader.readAsFlow(
+        return readAsFlow(
             streamConfig.args(),
             streamConfig.tags,
             streamConfig.logLevel,
@@ -36,7 +36,7 @@ class LogcatRepository(private val logFileManager: LogFileManager) {
     }
 
     fun getRawLogsAsFlow(streamConfig: StreamConfig): Flow<String> {
-        return LogcatReader.readRawLogsAsFlow(
+        return readRawLogsAsFlow(
             streamConfig.args(),
             streamConfig.tags,
             streamConfig.logLevel
@@ -49,7 +49,7 @@ class LogcatRepository(private val logFileManager: LogFileManager) {
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
             logFileManager.saveZip(
-                LogcatReader.getRawLogs(
+                getRawLogs(
                     streamConfig.args(),
                     streamConfig.tags,
                     streamConfig.logLevel
@@ -80,6 +80,6 @@ data class StreamConfig(
 ) {
     fun args(): Map<String, String> {
         val buffers = logBuffers.joinToString(",") { it.name.lowercase() }
-        return mapOf(LogcatReader.OPTION_BUFFER to buffers)
+        return mapOf(OPTION_BUFFER to buffers)
     }
 }
