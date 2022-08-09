@@ -58,6 +58,8 @@
     <string name="failed_to_open_directory">Failed to open saved logs directory</string>
     <string name="log_record_service_notification_channel_name">Log recording service</string>
     <string name="recorded_logs">Recorded logs</string>
+    <string name="copy_button_content_desc">Copy logs button</string>
+    <string name="logcat">Logcat</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>

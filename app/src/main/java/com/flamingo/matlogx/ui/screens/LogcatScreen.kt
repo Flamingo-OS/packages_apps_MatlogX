@@ -23,6 +23,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,14 +49,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -165,9 +171,28 @@ fun LogcatScreen(
             }
         }
     }
+    val isPaused by logcatScreenState.logcatStreamPaused.collectAsState(false)
+    val selectedList = remember { mutableStateListOf<LogData>() }
+    DisposableEffect(isPaused) {
+        onDispose {
+            selectedList.clear()
+        }
+    }
+    val showCopyButton by remember {
+        derivedStateOf {
+            selectedList.isNotEmpty()
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
+            val copyLogsCallback by rememberUpdatedState(newValue = {
+                logcatScreenState.coroutineScope.launch {
+                    logcatScreenState.copyLogs(selectedList)
+                    selectedList.clear()
+                }
+                return@rememberUpdatedState
+            })
             TopBar(
                 logcatScreenState,
                 onShowLogLevelMenuRequest = {
@@ -178,7 +203,9 @@ fun LogcatScreen(
                 },
                 onShareLogsRequest = {
                     showShareZipDialog = true
-                }
+                },
+                showCopyButton = showCopyButton,
+                onCopyLogsRequest = copyLogsCallback
             )
         },
         floatingActionButton = {
@@ -223,12 +250,28 @@ fun LogcatScreen(
             contentPadding = paddingValues
         ) {
             items(logcatList) { item ->
+                val isSelected by remember {
+                    derivedStateOf {
+                        selectedList.contains(item)
+                    }
+                }
+                val longClickCallback by rememberUpdatedState(newValue = {
+                    if (isPaused) {
+                        if (isSelected) {
+                            selectedList.remove(item)
+                        } else {
+                            selectedList.add(item)
+                        }
+                    }
+                })
                 LogItem(
                     modifier = Modifier.animateItemPlacement(),
                     item = item,
-                    onExpansionChanged = {
-                        item.isExpanded = it
+                    selected = isSelected,
+                    onClick = {
+                        item.isExpanded = !item.isExpanded
                     },
+                    onLongClick = longClickCallback
                 )
             }
         }
@@ -343,67 +386,79 @@ fun PermissionDialog(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun LogItem(
-    modifier: Modifier = Modifier,
     item: LogData,
-    onExpansionChanged: (Boolean) -> Unit
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val longPressCallback by rememberUpdatedState(newValue = { _: Offset -> onLongClick() })
+    val clickCallback by rememberUpdatedState(newValue = onClick)
     val textSize = item.textSize.toFloat()
-    Column(
-        verticalArrangement = Arrangement.Center,
+    Surface(
         modifier = modifier
-            .clickable(
-                enabled = true,
-                onClick = {
-                    onExpansionChanged(!item.isExpanded)
-                },
-            )
-            .padding(vertical = 8.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = longPressCallback,
+                    onPress = {
+                        clickCallback()
+                    }
+                )
+            },
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
     ) {
-        if (item.isExpanded && item.log is Log.Data) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    modifier = Modifier.weight(.3f),
-                    text = item.log.pid.toString(),
-                    fontSize = TextUnit(textSize, TextUnitType.Sp)
-                )
-                Text(
-                    modifier = Modifier.weight(.7f),
-                    text = item.log.time.toString(),
-                    fontSize = TextUnit(textSize, TextUnitType.Sp)
-                )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .fillMaxSize()
+        ) {
+            if (item.isExpanded && item.log is Log.Data) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier.weight(.3f),
+                        text = item.log.pid.toString(),
+                        fontSize = TextUnit(textSize, TextUnitType.Sp)
+                    )
+                    Text(
+                        modifier = Modifier.weight(.7f),
+                        text = item.log.time.toString(),
+                        fontSize = TextUnit(textSize, TextUnitType.Sp)
+                    )
+                }
             }
-        }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            if (item.log is Log.Data) {
-                val color = getColorForLevel(
-                    item.log.logLevel,
-                    MaterialTheme.colorScheme.onSurface,
-                )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                if (item.log is Log.Data) {
+                    val color = getColorForLevel(
+                        item.log.logLevel,
+                        MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        modifier = Modifier.weight(.25f),
+                        text = item.log.tag.toString(),
+                        maxLines = if (item.isExpanded) Int.MAX_VALUE else 1,
+                        fontSize = TextUnit(textSize, TextUnitType.Sp),
+                        overflow = TextOverflow.Ellipsis,
+                        color = color
+                    )
+                    Text(
+                        text = (item.log.logLevel ?: LogLevel.UNRECOGNIZED).name.first().toString(),
+                        modifier = Modifier
+                            .weight(.05f)
+                            .padding(horizontal = 2.dp),
+                        fontSize = TextUnit(textSize, TextUnitType.Sp),
+                        textAlign = TextAlign.Center,
+                        color = color
+                    )
+                }
                 Text(
-                    modifier = Modifier.weight(.25f),
-                    text = item.log.tag.toString(),
+                    modifier = Modifier.weight(if (item.log is Log.Divider) 1f else .7f),
+                    text = item.log.message,
                     maxLines = if (item.isExpanded) Int.MAX_VALUE else 1,
                     fontSize = TextUnit(textSize, TextUnitType.Sp),
-                    overflow = TextOverflow.Ellipsis,
-                    color = color
-                )
-                Text(
-                    text = (item.log.logLevel ?: LogLevel.UNRECOGNIZED).name.first().toString(),
-                    modifier = Modifier
-                        .weight(.05f)
-                        .padding(horizontal = 2.dp),
-                    fontSize = TextUnit(textSize, TextUnitType.Sp),
-                    textAlign = TextAlign.Center,
-                    color = color
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            Text(
-                modifier = Modifier.weight(if (item.log is Log.Divider) 1f else .7f),
-                text = item.log.message,
-                maxLines = if (item.isExpanded) Int.MAX_VALUE else 1,
-                fontSize = TextUnit(textSize, TextUnitType.Sp),
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
@@ -422,16 +477,18 @@ fun PreviewLogItem() {
     LogItem(
         item = LogData(
             log = Log.Data(
-                1000,
-                "26-05 12:55:47",
-                "AReallyLongTagForTesting",
-                LogLevel.VERBOSE,
-                "This is some log. More logs. More and more logs. Now something else. More logs."
+                pid = 1000,
+                time = "26-05 12:55:47",
+                tag = "AReallyLongTagForTesting",
+                logLevel = LogLevel.VERBOSE,
+                message = "This is some log. More logs. More and more logs. Now something else. More logs."
             ),
             defaultExpanded = true,
             textSize = 12
         ),
-        onExpansionChanged = {}
+        selected = false,
+        onClick = {},
+        onLongClick = {}
     )
 }
 

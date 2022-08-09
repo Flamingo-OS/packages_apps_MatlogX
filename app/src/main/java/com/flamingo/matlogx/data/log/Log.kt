@@ -16,23 +16,33 @@
 
 package com.flamingo.matlogx.data.log
 
-sealed interface Log {
+import android.os.SystemClock
 
+sealed interface Log {
+    val parseTime: Long
     val message: String
 
-    fun hasString(string: String?, ignoreCase: Boolean = true): Boolean {
-        return string?.let { message.contains(it, ignoreCase = ignoreCase) } ?: true
+    data class Divider(
+        override val parseTime: Long = SystemClock.elapsedRealtime(),
+        override val message: String
+    ) : Log {
+        override fun toString(): String {
+            return message
+        }
     }
-
-    data class Divider(override val message: String) : Log
 
     data class Data(
         val pid: Short?,
         val time: String?,
         val tag: String?,
         val logLevel: LogLevel?,
+        override val parseTime: Long = SystemClock.elapsedRealtime(),
         override val message: String
-    ) : Log
+    ) : Log {
+        override fun toString(): String {
+            return "$time ${logLevel?.name?.first()}/$tag($pid): $message"
+        }
+    }
 }
 
 object LogFactory {

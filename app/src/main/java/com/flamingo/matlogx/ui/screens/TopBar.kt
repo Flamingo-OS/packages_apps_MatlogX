@@ -65,9 +65,11 @@ import kotlinx.coroutines.flow.emptyFlow
 @Composable
 fun TopBar(
     state: LogcatScreenState,
+    showCopyButton: Boolean,
     onShowLogLevelMenuRequest: () -> Unit,
     onSaveLogsRequest: () -> Unit,
-    onShareLogsRequest: () -> Unit
+    onShareLogsRequest: () -> Unit,
+    onCopyLogsRequest: () -> Unit,
 ) {
     val containerColor = MaterialTheme.colorScheme.primary
     val contentColorForContainer = contentColorFor(backgroundColor = containerColor)
@@ -134,6 +136,15 @@ fun TopBar(
                     contentDescription = stringResource(R.string.play_pause_button_content_desc),
                     tint = contentColorForContainer
                 )
+            }
+            if (showCopyButton) {
+                IconButton(onClick = onCopyLogsRequest) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_content_copy_24),
+                        contentDescription = stringResource(R.string.copy_button_content_desc),
+                        tint = contentColorForContainer
+                    )
+                }
             }
             TopBarOverflowMenu(
                 state,

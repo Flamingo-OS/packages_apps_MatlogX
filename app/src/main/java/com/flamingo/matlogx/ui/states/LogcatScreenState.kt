@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
@@ -65,6 +66,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 import org.koin.androidx.compose.get
 
@@ -128,6 +130,8 @@ class LogcatScreenState(
             textSize = textSize
         )
     }
+
+    private val clipboardManager = context.getSystemService<ClipboardManager>()!!
 
     private var job: Job? = null
 
@@ -194,7 +198,7 @@ class LogcatScreenState(
     }
 
     fun copyCommand() {
-        context.getSystemService(ClipboardManager::class.java).setPrimaryClip(
+        clipboardManager.setPrimaryClip(
             ClipData(
                 ClipDescription(context.getString(R.string.adb_command), arrayOf("text/plain")),
                 ClipData.Item(context.getString(R.string.command))
@@ -330,6 +334,19 @@ class LogcatScreenState(
     private fun showSnackbar(message: String) {
         coroutineScope.launch {
             snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    suspend fun copyLogs(list: List<LogData>) {
+        withContext(Dispatchers.Default) {
+            val listCopy = list.toList()
+            clipboardManager.setPrimaryClip(
+                ClipData(
+                    ClipDescription(context.getString(R.string.logcat), arrayOf("text/plain")),
+                    ClipData.Item(listCopy.joinToString("\n") { it.log.toString() })
+                )
+            )
+            showSnackbar(context.getString(R.string.copied_to_clipboard))
         }
     }
 }
