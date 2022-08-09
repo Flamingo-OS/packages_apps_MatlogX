@@ -55,6 +55,10 @@
     <string name="saved_logs_button_content_desc">已保存的日志按钮</string>
     <string name="activity_not_found">未找到 DocumentsUI</string>
     <string name="failed_to_open_directory">打开日志保存目录失败</string>
+    <string name="log_record_service_notification_channel_name">日志记录服务</string>
+    <string name="recorded_logs">日志已记录</string>
+    <string name="copy_button_content_desc">复制日志按钮</string>
+    <string name="logcat">Logcat</string>
 
     <!-- Settings -->
     <string name="settings">设置</string>
