@@ -135,7 +135,9 @@ class LogcatScreenState(
         if (hasReadLogsPermission) {
             coroutineScope.launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    startJob()
+                    if (!_logcatFlowSuspended.value) {
+                        startJob()
+                    }
                 }
             }
         }
