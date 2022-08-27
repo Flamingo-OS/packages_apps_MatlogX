@@ -25,6 +25,8 @@
 	   Чтобы предоставить разрешение, откройте adb и введите следующую команду (без кавычек):\n
         "adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS".
     </string>
+    <string name="adb_command">Команда ADB</string>
+    <string name="command">adb shell pm grant com.flamingo.matlogx android.permission.READ_LOGS</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
     <string name="search_hint">Поиск логов</string>
     <string name="log_level">Уровень лога</string>
@@ -35,12 +37,36 @@
     <string name="share_logs">Поделиться логами</string>
     <string name="save_logs">Сохранить логи</string>
     <string name="clear_logs">Очистить логи</string>
-
+    <string name="search_button_content_desc">Кнопка поиска в меню</string>
+    <string name="play_pause_button_content_desc">Запись/Пауза</string>
+    <string name="menu_overflow_button">Меню переполнено</string>
+    <string name="clear_logs_button_content_desc">Очистить логи</string>
+    <string name="share_button_content_desc">Поделиться</string>
+    <string name="log_level_button_content_desc">Уровень лога</string>
+    <string name="save_zip_button_content_desc">Сохранить как zip</string>
+    <string name="scroll_up_fab_content_desc">Плавающая кнопка действия для прокрутки вверх</string>
+    <string name="scroll_down_fab_content_desc">Плавающая кнопка действия для прокрутки вниз</string>
+    <string name="search_bar_close_icon_content_desc">Кнопка Закрыть в строке поиска</string>
+    <string name="clear_recent_search_button_content_desc">Очистить недавний поисковый запрос</string>
+    <string name="clear">Очистить</string>
+    <string name="record_logs">Записать логи</string>
+    <string name="record_logs_button_content_desc">Записать логи</string>
+    <string name="stop_recording">Остановить запись</string>
+    <string name="recording_logs">Логи записываются</string>
+    <string name="stop">Стоп</string>
+    <string name="saved_logs">Сохраненные логи</string>
+    <string name="saved_logs_button_content_desc">Сохраненные логи</string>
+    <string name="activity_not_found">Не найдено действий для открытия каталога</string>
+    <string name="failed_to_open_directory">Не удалось открыть каталог сохраненных логов</string>
+    <string name="log_record_service_notification_channel_name">Сервис записи лога</string>
+    <string name="recorded_logs">Записанные логи</string>
+    <string name="copy_button_content_desc">Копировать логи</string>
+    <string name="logcat">Logcat</string>
     <!-- Settings -->
     <string name="settings">Настройки</string>
     <string name="configuration">Конфигурация</string>
     <string name="log_display_limit">Ограничение отображения лога</string>
-    <string name="log_display_limit_summary_placeholder">Показать только последние <xliff:g example="10000" id="limit">%1$d</xliff:g> журналы, чтобы избежать нехватки памяти.</string>
+    <string name="log_display_limit_summary_placeholder">Показать только последние <xliff:g example="10000" id="limit">%1$d</xliff:g> логи, чтобы избежать нехватки памяти.</string>
     <string name="log_display_limit_summary_no_limit">Не установлен лимит. Имейте ввиду, что со временем у приложения закончится память.</string>
     <string name="log_buffers">Буферы логов</string>
     <string name="appearance">Вид</string>
