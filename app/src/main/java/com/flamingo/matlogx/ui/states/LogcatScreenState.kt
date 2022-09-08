@@ -23,9 +23,10 @@ import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.ResolveInfoFlags
 import android.net.Uri
-import androidx.annotation.GuardedBy
 
+import androidx.annotation.GuardedBy
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -279,8 +280,10 @@ class LogcatScreenState(
             val uriResult = logcatRepository.getSavedLogsDirectoryUri()
             if (uriResult.isSuccess) {
                 val intent = Intent(Intent.ACTION_VIEW, uriResult.getOrThrow())
-                val resolvedActivities =
-                    context.packageManager.queryIntentActivities(intent, 0 /* flags */)
+                val resolvedActivities = context.packageManager.queryIntentActivities(
+                    intent,
+                    ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+                )
                 if (resolvedActivities.isNotEmpty()) {
                     context.startActivity(intent)
                 } else {
